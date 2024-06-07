@@ -1,27 +1,28 @@
-var data;
-var currentPage = 1;
-var rowsPerPage = 10;
-var selRow;
-var sortDirection = {
-  ID: 1,
-  Name: 1,
-};
-var maxLength = 63;
-var desc;
-var truncatedText;
-
 document.addEventListener("DOMContentLoaded", function () {
-  function displayData() {
-    var startIndex = (currentPage - 1) * rowsPerPage;
-    var endIndex = startIndex + rowsPerPage;
-    var tableBody = document.querySelector("#dataTable tbody");
+  var data;
+  var currentPage = 1;
+  var rowsPerPage = 10;
+  var selRow;
+  var sortDirection = {
+    ID: 1,
+    Name: 1,
+  };
+  var maxLength = 63;
+  var desc;
+  var truncatedText;
+  var filteredData = [];
 
+  function displayData() {
+    var tableBody = document.querySelector("#dataTable tbody");
     tableBody.innerHTML = "";
 
-    for (var i = startIndex; i < endIndex && i < data.length; i++) {
-      var item = data[i];
+    var displayData = filteredData.length > 0 ? filteredData : data;
+
+    for (var i = 0; i < displayData.length; i++) {
+      var item = displayData[i];
       var row = tableBody.insertRow();
       row.setAttribute("id", "row_" + item.ID);
+      row.setAttribute("data-page", Math.floor(i / rowsPerPage) + 1);
 
       var selectCell = row.insertCell();
       var selectCheckbox = document.createElement("input");
@@ -92,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.appendChild(popup);
       });
     }
+    updatePagination();
   }
 
   function addAmountClass(cell, amount) {
@@ -108,36 +110,39 @@ document.addEventListener("DOMContentLoaded", function () {
     var pagination = document.getElementById("pagination");
     pagination.innerHTML = "";
 
-    var numPages = Math.ceil(data.length / rowsPerPage);
-
-    if (currentPage > 1) {
-      var prevButton = document.createElement("button");
-      prevButton.innerText = "Previous";
-      prevButton.addEventListener("click", function () {
-        currentPage--;
-        displayData();
-      });
-      pagination.appendChild(prevButton);
-    }
+    var displayData = filteredData.length > 0 ? filteredData : data;
+    var numPages = Math.ceil(displayData.length / rowsPerPage);
 
     for (var i = 1; i <= numPages; i++) {
-      var pageButton = document.createElement("button");
+      var pageButton = document.createElement("span");
       pageButton.innerText = i;
+      pageButton.classList.add("pagination-button");
+      if (i === currentPage) {
+        pageButton.classList.add("active");
+      }
       pageButton.addEventListener("click", function () {
         currentPage = parseInt(this.innerText);
-        displayData();
+        updatePagination();
       });
       pagination.appendChild(pageButton);
     }
+  }
 
-    if (currentPage < numPages) {
-      var nextButton = document.createElement("button");
-      nextButton.innerText = "Next";
-      nextButton.addEventListener("click", function () {
-        currentPage++;
-        displayData();
-      });
-      pagination.appendChild(nextButton);
+  function updatePagination() {
+    document.querySelectorAll("[data-page]").forEach(function (row) {
+      row.style.display =
+        row.getAttribute("data-page") == currentPage ? "table-row" : "none";
+    });
+
+    document.querySelectorAll(".pagination-button").forEach(function (button) {
+      button.classList.remove("active");
+    });
+
+    var activeButton = document.querySelector(
+      ".pagination-button:nth-child(" + currentPage + ")"
+    );
+    if (activeButton) {
+      activeButton.classList.add("active");
     }
   }
 
@@ -147,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
     currentPage = 1;
     displayData();
     generatePagination();
+    updatePagination();
   }
 
   function sortDataBy(field) {
@@ -159,6 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
     currentPage = 1;
     displayData();
     generatePagination();
+    updatePagination();
   }
 
   function createPopup() {
@@ -230,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.body.removeChild(form);
       displayData();
       generatePagination();
+      updatePagination();
     });
   }
 
@@ -241,6 +249,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     displayData();
     generatePagination();
+    updatePagination();
   }
 
   function handlePopup(event, action) {
@@ -284,12 +293,39 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function handleSearch() {
+    var searchInput = document.getElementById("searchInput");
+    var searchTerm = searchInput.value.toLowerCase();
+
+    if (searchTerm.length >= 3) {
+      filteredData = data.filter(function (item) {
+        return item.Name.toLowerCase().includes(searchTerm);
+      });
+    } else {
+      filteredData = [];
+    }
+
+    currentPage = 1;
+    displayData();
+    generatePagination();
+    updatePagination();
+
+    if (filteredData.length === 0 && searchTerm.length >= 3) {
+      var tableBody = document.querySelector("#dataTable tbody");
+      tableBody.innerHTML = "No records Found";
+    } else if (searchTerm.length === 0) {
+      filteredData = [];
+      displayData();
+    }
+  }
+
   fetch("data.json")
     .then((response) => response.json())
     .then((json) => {
       data = json;
       displayData();
       generatePagination();
+      updatePagination();
     })
     .catch((error) => console.error("Error fetching JSON:", error));
 
@@ -299,6 +335,10 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("addCustomerButton")
     .addEventListener("click", handleAddCustomer);
+
+  document
+    .getElementById("searchInput")
+    .addEventListener("input", handleSearch);
 
   document
     .querySelector("th:nth-child(2)")
