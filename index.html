@@ -1,60 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="index.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css" />
     <script src="script.js" defer></script>
     <title>Task</title>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="table">
-            <table id="dataTable">
-                <thead>
-                    <div class="items">
-                        <div class="search">
-                            <input type="search" id="searchInput" placeholder="Search">
-                        </div>
-                        <button id="deleteButton" style="display: none;">Delete</button>
-                        <button id="addCustomerButton">
-                            <img src="plus.svg" alt="" style="margin-right: 15px" />Add Customer
-                        </button>
-                    </div>
-                    <div class="headers">
-                        <tr>
-                            <th><input type="checkbox" /></th>
-                            <th># <img src="unsorted.svg" alt="" /></th>
-                            <th>Name <img src="unsorted.svg" alt="" /></th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Rate</th>
-                            <th>Balance</th>
-                            <th>Deposit</th>
-                            <th></th>
-                        </tr>
-                    </div>
-                </thead>
-                <tbody>
-                  
-                </tbody>
-            </table>
-        </div>
+      <div class="table">
+        <table id="dataTable">
+          <thead>
+            <div class="items">
+              <div class="search">
+                <input type="search" id="searchInput" placeholder="Search" />
+              </div>
+              <div class="del">
+                <span id="numSelectedRows" style="display: none"></span>
+                <button id="deleteButton" style="display: none"><img src="bin.svg" alt=""></button>
+              </div>
+              <button id="addCustomerButton">
+                <img src="plus.svg" alt="" style="margin-right: 15px" />Add
+                Customer
+              </button>
+            </div>
+            <div class="headers">
+              <tr>
+                <th><input type="checkbox" /></th>
+                <th># <img src="unsorted.svg" alt="" /></th>
+                <th>Name <img src="unsorted.svg" alt="" /></th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Rate</th>
+                <th>Balance</th>
+                <th>Deposit</th>
+                <th></th>
+              </tr>
+            </div>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
     <div class="tableBottom">
-        <div id="rowPerPage">
-            <label for="rowsPerPage">Rows per page:</label>
-            <select id="rowsPerPage">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="15">15</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-                <option value="50">50</option>
-            </select>
-        </div>
-        <div id="pagination"></div>
+      <div id="rowPerPage">
+        <label for="rowsPerPage">Rows per page:</label>
+        <select id="rowsPerPage">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="40">40</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+      <div id="pagination"></div>
     </div>
-</body>
+  </body>
 </html>

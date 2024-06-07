@@ -29,6 +29,14 @@ document.addEventListener("DOMContentLoaded", function () {
       selectCheckbox.type = "checkbox";
       selectCheckbox.name = "selectedRow";
       selectCell.appendChild(selectCheckbox);
+      var rowCheckboxes = document.querySelectorAll(
+        'td input[type="checkbox"]'
+      );
+      rowCheckboxes.forEach(function (checkbox) {
+        checkbox.addEventListener("change", function () {
+          updateDeleteButtonVisibility();
+        });
+      });
 
       var idCell = row.insertCell();
       idCell.innerText = item.ID;
@@ -62,14 +70,14 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       var amount1Cell = row.insertCell();
-      amount1Cell.innerText = item.Amount1;
+      amount1Cell.innerText = "$" + item.Amount1 + " CAD";
 
       var amount2Cell = row.insertCell();
       amount2Cell.innerText = item.Amount2;
-      addAmountClass(amount2Cell, item.Amount2);
+      addAmountClass(amount2Cell, "$" + item.Amount2 + " CAD");
 
       var amount3Cell = row.insertCell();
-      amount3Cell.innerText = item.Amount3;
+      amount3Cell.innerText = "$" + item.Amount3 + " CAD";
 
       var settingsCell = row.insertCell();
       settingsCell.innerHTML = `<span class="settings-icon">&#8942;</span>`;
@@ -370,13 +378,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function updateDeleteButtonVisibility() {
     var deleteButton = document.getElementById("deleteButton");
+    var searchInput = document.querySelector(".search");
+    var numSelectedRows = document.getElementById("numSelectedRows");
+
+    var rowCheckboxes = document.querySelectorAll(
+      '#dataTable td input[type="checkbox"]'
+    );
+
     var anyRowChecked = Array.from(rowCheckboxes).some(function (checkbox) {
       return checkbox.checked;
     });
+
     if (anyRowChecked) {
       deleteButton.style.display = "inline-block";
+      searchInput.style.display = "none";
+
+      var selectedRowCount = document.querySelectorAll(
+        '#dataTable td input[type="checkbox"]:checked'
+      ).length;
+      numSelectedRows.textContent = selectedRowCount + " selected";
+      numSelectedRows.style.display = "inline-block";
     } else {
       deleteButton.style.display = "none";
+      searchInput.style.display = "inline-block";
+      numSelectedRows.style.display = "none";
     }
   }
 
