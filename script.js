@@ -1,17 +1,17 @@
-document.addEventListener("DOMContentLoaded", function () {
-  var data;
-  var currentPage = 1;
-  var rowsPerPage = 10;
-  var selRow;
-  var sortDirection = {
-    ID: 1,
-    Name: 1,
-  };
-  var maxLength = 63;
-  var desc;
-  var truncatedText;
-  var filteredData = [];
+var data;
+var currentPage = 1;
+var rowsPerPage = 10;
+var selRow;
+var sortDirection = {
+  ID: 1,
+  Name: 1,
+};
+var maxLength = 63;
+var desc;
+var truncatedText;
+var filteredData = [];
 
+document.addEventListener("DOMContentLoaded", function () {
   function displayData() {
     var tableBody = document.querySelector("#dataTable tbody");
     tableBody.innerHTML = "";
@@ -85,7 +85,8 @@ document.addEventListener("DOMContentLoaded", function () {
         settingsIcon.style.visibility = "hidden";
       });
       settingsCell.addEventListener("click", function (event) {
-        selRow = row;
+        handleSettings(event);
+        console.log(selRow);
         var popup = createPopup();
         var iconRect = this.getBoundingClientRect();
         popup.style.top = iconRect.top + "px";
@@ -172,10 +173,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var popup = document.createElement("div");
     popup.classList.add("popup");
     popup.innerHTML = `
-              <div class="popup-option" data-action="view">View <img src="info.svg"></div>
-              <div class="popup-option" data-action="edit">Edit <img src="edit.svg"></div>
-              <div class="popup-option" data-action="delete">Delete <img src="bin.svg"></div>
-          `;
+          <div class="popup-option" data-action="view">View <img src="info.svg"></div>
+          <div class="popup-option" data-action="edit">Edit <img src="edit.svg"></div>
+          <div class="popup-option" data-action="delete">Delete <img src="bin.svg"></div>
+      `;
     document.body.appendChild(popup);
 
     popup.querySelectorAll(".popup-option").forEach(function (option) {
@@ -233,7 +234,6 @@ document.addEventListener("DOMContentLoaded", function () {
         Amount3: e.target.elements["amount3"].value,
       };
       data.push(newItem);
-
       document.body.removeChild(form);
       displayData();
       generatePagination();
@@ -241,15 +241,43 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function handleDelete(event) {
-    var rowIndex = parseInt(selRow.id.split("_")[1]) - 1;
-    data.splice(rowIndex, 1);
-    for (var i = rowIndex; i < data.length; i++) {
-      data[i].ID = i + 1;
+  function handleDelete(selRow) {
+    if (selRow) {
+      var rowIndex = parseInt(selRow.id.split("_")[1]) - 1;
+      data.splice(rowIndex, 1);
+    } else {
+      var checkedRows = document.querySelectorAll(
+        'td input[type="checkbox"]:checked'
+      );
+      if (checkedRows.length === 0) {
+        return;
+      }
+      var rowsToDelete = Array.from(checkedRows).map(function (checkbox) {
+        return parseInt(checkbox.parentNode.parentNode.id.split("_")[1]) - 1;
+      });
+      rowsToDelete.sort(function (a, b) {
+        return b - a;
+      });
+      rowsToDelete.forEach(function (rowIndex) {
+        data.splice(rowIndex, 1);
+      });
     }
+
+    var maxPages = Math.ceil(data.length / rowsPerPage);
+    if (currentPage > maxPages) {
+      currentPage = maxPages;
+    }
+
     displayData();
     generatePagination();
     updatePagination();
+
+    if (data.length === 0) {
+      currentPage = 1;
+      var pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+    }
+    updateDeleteButtonVisibility();
   }
 
   function handlePopup(event, action) {
@@ -289,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.removeChild(form);
       });
     } else if (action === "delete") {
-      handleDelete(event);
+      handleDelete(selRow);
     }
   }
 
@@ -316,6 +344,39 @@ document.addEventListener("DOMContentLoaded", function () {
     } else if (searchTerm.length === 0) {
       filteredData = [];
       displayData();
+    }
+  }
+
+  var headerCheckbox = document.querySelector('th input[type="checkbox"]');
+  headerCheckbox.addEventListener("change", function () {
+    var rowCheckboxes = document.querySelectorAll('td input[type="checkbox"]');
+    rowCheckboxes.forEach(function (checkbox) {
+      checkbox.checked = headerCheckbox.checked;
+    });
+    updateDeleteButtonVisibility();
+  });
+
+  var rowCheckboxes = document.querySelectorAll('td input[type="checkbox"]');
+  rowCheckboxes.forEach(function (checkbox) {
+    checkbox.addEventListener("change", function () {
+      updateDeleteButtonVisibility();
+    });
+  });
+
+  var deleteButton = document.getElementById("deleteButton");
+  deleteButton.addEventListener("click", function () {
+    handleDelete();
+  });
+
+  function updateDeleteButtonVisibility() {
+    var deleteButton = document.getElementById("deleteButton");
+    var anyRowChecked = Array.from(rowCheckboxes).some(function (checkbox) {
+      return checkbox.checked;
+    });
+    if (anyRowChecked) {
+      deleteButton.style.display = "inline-block";
+    } else {
+      deleteButton.style.display = "none";
     }
   }
 
@@ -352,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sortDataBy("Name");
     });
 });
-
 function handleSettings(event) {
-  selRow = event.target.parentNode.parentNode;
+  selRow = event.target.closest("tr");
+  console.log(selRow);
 }
